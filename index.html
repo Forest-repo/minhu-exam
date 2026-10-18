@@ -5,92 +5,195 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>民呼我为·机考系统</title>
 <style>
-:root{--blue:#1a5fb4;--red:#c01c28;--green:#2e7d32;--bg:#f5f6f7;--card:#fff;--line:#e0e0e0;--muted:#777}
+/* ============ 设计令牌：纸墨学习工具 ============ */
+:root{
+  --paper:#f4f2ec;          /* 暖纸底 */
+  --card:#fffdf7;           /* 卡纸 */
+  --ink:#25292e;            /* 墨色正文 */
+  --ink-soft:#5a6068;       /* 次级墨色 */
+  --muted:#8a8f96;          /* 弱提示 */
+  --navy:#1c3352;           /* 墨青主色 */
+  --navy-deep:#152539;
+  --seal:#b03a2e;           /* 印章朱红（唯一强调色） */
+  --seal-soft:#f6e9e5;
+  --green:#2e6e49; --green-soft:#e7f1e9;
+  --amber:#9a6b10; --amber-soft:#f7efdd;
+  --line:#e4dfd2;           /* 纸纹边线 */
+  --line-deep:#c9c2ae;
+  --radius:12px;
+  --shadow-1:0 1px 3px rgba(37,41,46,.07);
+  --shadow-2:0 8px 24px rgba(28,51,82,.10);
+  --ease:cubic-bezier(.16,1,.3,1);
+  --serif:"Songti SC","SimSun","Noto Serif SC","STSong",serif;
+  --sans:"PingFang SC","Microsoft YaHei","Source Han Sans SC",sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Microsoft YaHei","PingFang SC","Source Han Sans SC",sans-serif;background:var(--bg);color:#222;font-size:16px}
-.topbar{background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:10}
-.topbar h1{font-size:18px;cursor:pointer}
-.topbar .navbtn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:14px}
-.topbar .navbtn:hover{background:rgba(255,255,255,.3)}
-.topbar .timer{margin-left:auto;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
-.topbar .timer.danger{color:#ffb3b3;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:.5}}
-.wrap{max-width:820px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
-.btn{display:inline-block;background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:15px;margin:4px 4px 4px 0}
-.btn:hover{opacity:.9}
-.btn.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
-.btn.danger{background:var(--red)}
-.btn.small{padding:4px 10px;font-size:13px}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.setgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.setcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
-.setcard h3{font-size:15px;margin-bottom:6px}
-.setcard .meta{font-size:12.5px;color:var(--muted);margin-bottom:8px}
-.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;background:#e8f0fe;color:var(--blue);margin-left:6px}
-.qcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
-.qcard .qhead{font-size:13px;color:var(--muted);margin-bottom:4px}
-.qcard .stem{line-height:1.75;margin-bottom:8px}
-.opt{display:block;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin:6px 0;cursor:pointer;line-height:1.6}
-.opt:hover{border-color:var(--blue)}
-.opt.sel{background:#e8f0fe;border-color:var(--blue);font-weight:600}
-.opt.right{background:#e6f4ea;border-color:var(--green)}
-.opt.wrong{background:#fdecea;border-color:var(--red)}
-.opt.miss{background:#fff8e1;border-color:#f9a825}
-.judgebtn{display:inline-block;width:64px;padding:8px 0;text-align:center;border:1px solid var(--line);border-radius:8px;margin-right:10px;cursor:pointer;font-size:18px}
-.judgebtn.sel{background:#e8f0fe;border-color:var(--blue);font-weight:700}
-.blankinput{border:none;border-bottom:2px solid var(--blue);background:#f8faff;min-width:120px;padding:2px 6px;font-size:15px;text-align:center}
-.blankinput:focus{outline:none;border-bottom-color:var(--red)}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6}
+/* 氛围层：纸面细纹 + 顶部微光 */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background:radial-gradient(70rem 30rem at 50% -12%, rgba(28,51,82,.06), transparent 65%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
+::selection{background:rgba(176,58,46,.15)}
+:focus-visible{outline:2px solid var(--seal);outline-offset:2px;border-radius:4px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{background:var(--navy);color:#f2ede0;padding:0 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;box-shadow:var(--shadow-2)}
+.topbar h1{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.06em;cursor:pointer;padding:14px 0;white-space:nowrap}
+.topbar h1 .seal{color:#e8b4a8;font-size:13px;font-family:var(--sans);letter-spacing:.1em;margin-left:8px;opacity:.85}
+.topbar .navbtn{background:transparent;border:none;color:rgba(242,237,224,.75);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:14px;transition:background var(--ease),color 150ms}
+.topbar .navbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.topbar .timer{margin-left:auto;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;font-family:var(--serif);letter-spacing:.05em;color:#f2ede0;padding-right:4px}
+.topbar .timer.danger{color:#ffb3a3;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.45}}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px;position:relative;z-index:1}
+
+/* ---------- 入场动效 ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.qcard,.setcard{animation:rise .45s var(--ease) backwards}
+.qcard:nth-child(2){animation-delay:40ms}.qcard:nth-child(3){animation-delay:80ms}
+.qcard:nth-child(4){animation-delay:120ms}.qcard:nth-child(5){animation-delay:160ms}
+.qcard:nth-child(n+6){animation-delay:200ms}
+@media (prefers-reduced-motion:reduce){
+  .card,.qcard,.setcard{animation:none}
+  .topbar .timer.danger{animation:none}
+  *{transition-duration:1ms!important}
+}
+
+/* ---------- 通用卡片/按钮 ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow-1)}
+.btn{display:inline-block;background:var(--navy);color:#f2ede0;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:15px;margin:4px 6px 4px 0;font-family:var(--sans);transition:transform 150ms var(--ease),box-shadow 150ms,background 150ms;box-shadow:var(--shadow-1)}
+.btn:hover{background:var(--navy-deep);transform:translateY(-1px);box-shadow:var(--shadow-2)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--line-deep)}
+.btn.ghost:hover{background:#fff;border-color:var(--navy)}
+.btn.danger{background:var(--seal)}
+.btn.danger:hover{background:#96301f}
+.btn.small{padding:5px 12px;font-size:13px;margin:3px 4px 3px 0}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none}
+
+/* ---------- 首页 ---------- */
+.setgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.setcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-1);transition:transform 200ms var(--ease),box-shadow 200ms,border-color 200ms;position:relative;overflow:hidden}
+.setcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-2);border-color:var(--line-deep)}
+.setcard h3{font-family:var(--serif);font-size:16px;margin-bottom:8px;letter-spacing:.02em}
+.setcard .meta{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;line-height:1.8}
+.setcard .best{font-family:var(--serif);color:var(--seal);font-weight:700;font-size:15px}
+.tag{display:inline-block;font-size:11px;padding:1px 9px;border-radius:4px;margin-left:4px;letter-spacing:.08em;font-family:var(--sans);vertical-align:2px}
+.tag.formal{background:var(--seal);color:#fff}
+.tag.backup{background:var(--amber);color:#fff}
+.tag.mock{background:#dcd6c5;color:var(--ink-soft)}
+.usage{border-left:3px solid var(--seal);padding-left:14px;font-size:14px;color:var(--ink-soft);line-height:1.9}
+.usage b{color:var(--ink)}
+
+/* ---------- 题目卡 ---------- */
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;box-shadow:var(--shadow-1)}
+.qcard .qhead{font-size:12.5px;color:var(--muted);margin-bottom:6px;letter-spacing:.03em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qcard .qhead input[type=checkbox]{width:16px;height:16px;accent-color:var(--seal)}
+.qcard .stem{line-height:1.8;margin-bottom:10px;text-wrap:pretty}
+.opt{display:block;padding:9px 12px;border:1px solid var(--line);border-radius:9px;margin:7px 0;cursor:pointer;line-height:1.65;background:#fffdf7;transition:border-color 150ms,background 150ms,transform 120ms var(--ease);text-wrap:pretty}
+.opt:hover{border-color:var(--navy);background:#fbfaf5}
+.opt:active{transform:scale(.995)}
+.opt b{font-family:var(--serif);color:var(--navy);margin-right:2px}
+.opt.sel{background:#eaf0f7;border-color:var(--navy);box-shadow:inset 3px 0 0 var(--navy)}
+.opt.sel b{color:var(--navy-deep)}
+.opt.right{background:var(--green-soft);border-color:var(--green)}
+.opt.right b{color:var(--green)}
+.opt.wrong{background:var(--seal-soft);border-color:var(--seal)}
+.opt.wrong b{color:var(--seal)}
+.opt.miss{background:var(--amber-soft);border-color:var(--amber)}
+.judgebtn{display:inline-block;width:72px;padding:9px 0;text-align:center;border:1px solid var(--line);border-radius:9px;margin-right:12px;cursor:pointer;font-size:20px;background:#fffdf7;transition:border-color 150ms,background 150ms,transform 120ms var(--ease);font-family:var(--serif)}
+.judgebtn:hover{border-color:var(--navy)}
+.judgebtn.sel{background:#eaf0f7;border-color:var(--navy);font-weight:700;color:var(--navy)}
+.blankinput{border:none;border-bottom:2px solid var(--line-deep);background:transparent;min-width:130px;padding:2px 8px;font-size:16px;text-align:center;font-family:var(--serif);color:var(--navy-deep);transition:border-color 200ms}
+.blankinput:focus{outline:none;border-bottom-color:var(--seal)}
+
+/* ---------- 分区标题（卷内大题） ---------- */
+.sechead{font-family:var(--serif);font-size:16.5px;font-weight:700;color:var(--navy);letter-spacing:.04em;padding:4px 2px;margin:18px 0 10px;display:flex;align-items:center;gap:10px}
+.sechead::after{content:"";flex:1;height:1px;background:linear-gradient(to right,var(--line-deep),transparent)}
+
+/* ---------- 右侧答题卡 ---------- */
 .navgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
-.navgrid button{padding:6px 0;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-size:13px}
-.navgrid button.done{background:var(--blue);color:#fff;border-color:var(--blue)}
-.navgrid button.cur{outline:2px solid var(--red)}
-.sidenav{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
-.sidenav .prog{text-align:center;margin-bottom:8px;font-size:14px}
+.navgrid button{padding:6px 0;border:1px solid var(--line);background:#fffdf7;border-radius:7px;cursor:pointer;font-size:13px;font-variant-numeric:tabular-nums;font-family:var(--serif);color:var(--ink-soft);transition:all 150ms var(--ease)}
+.navgrid button:hover{border-color:var(--navy);color:var(--navy)}
+.navgrid button.done{background:var(--navy);color:#f2ede0;border-color:var(--navy);font-weight:700}
+.navgrid button.cur{outline:2px solid var(--seal);outline-offset:1px}
+.sidenav{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-1)}
+.sidenav .prog{text-align:center;margin-bottom:4px;font-size:13.5px;color:var(--ink-soft);letter-spacing:.05em}
+.sidenav .prog b{font-family:var(--serif);font-size:17px;color:var(--navy)}
+.sidenav .progress{height:5px;background:#e8e3d5;border-radius:3px;margin:8px 0 12px;overflow:hidden}
+.sidenav .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--navy),#2c4f7e);border-radius:3px;transition:width .4s var(--ease)}
 @media(min-width:1024px){
-  .examwrap .maincol{margin-right:215px}
-  .sidenav{position:fixed;right:16px;top:64px;width:195px;max-height:calc(100vh - 84px);overflow-y:auto;z-index:5}
+  .examwrap .maincol{margin-right:230px}
+  .sidenav{position:fixed;right:16px;top:70px;width:200px;max-height:calc(100vh - 92px);overflow-y:auto;z-index:5}
 }
 @media(max-width:1023px){
   .examwrap{display:flex;flex-direction:column}
-  .sidenav{order:-1;margin-bottom:12px}
+  .sidenav{order:-1;margin-bottom:14px}
 }
-.scorebig{font-size:44px;font-weight:800;color:var(--blue);text-align:center}
-.subscore{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:10px 0;color:#444;font-size:14px}
-.diff{font-size:13.5px;background:#fafafa;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.7}
-.diff .u{color:var(--red)} .diff .r{color:var(--green)}
+
+/* ---------- 成绩 ---------- */
+.scorebig{font-family:var(--serif);font-size:64px;font-weight:900;color:var(--navy);text-align:center;line-height:1.1;letter-spacing:-.01em}
+.scorebig span{font-size:20px;color:var(--muted);font-weight:400}
+.scorewrap{text-align:center;padding:10px 0 6px}
+.scoreline{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:13px}
+.scoreline::before,.scoreline::after{content:"";flex:1;height:1px;background:var(--line-deep)}
+.subscore{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+.subscore .sub{background:#f6f3ea;border:1px solid var(--line);border-radius:9px;padding:8px 16px;text-align:center;min-width:96px}
+.subscore .sub .lab{font-size:12px;color:var(--ink-soft);letter-spacing:.08em}
+.subscore .sub .val{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.subscore .sub.zero .val{color:var(--muted)}
+.diff{font-size:13.5px;background:#f7f4ec;border:1px dashed var(--line-deep);border-radius:8px;padding:9px 12px;margin-top:10px;line-height:1.8}
+.diff .u{color:var(--seal);font-weight:600;text-decoration:line-through;text-decoration-color:rgba(176,58,46,.4)}
+.diff .r{color:var(--green);font-weight:700;font-family:var(--serif)}
 .muted{color:var(--muted);font-size:13px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.filterbar button{border:1px solid var(--line);background:#fff;border-radius:16px;padding:4px 14px;cursor:pointer;font-size:13px;margin-right:6px}
-.filterbar button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:99;max-width:90%}
+
+/* ---------- 筛选 ---------- */
+.filterbar button{border:1px solid var(--line);background:#fffdf7;border-radius:18px;padding:5px 16px;cursor:pointer;font-size:13px;margin-right:8px;color:var(--ink-soft);transition:all 150ms var(--ease)}
+.filterbar button:hover{border-color:var(--navy);color:var(--navy)}
+.filterbar button.on{background:var(--navy);color:#f2ede0;border-color:var(--navy);font-weight:600}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy-deep);color:#f2ede0;padding:11px 22px;border-radius:10px;font-size:14px;z-index:99;max-width:88%;box-shadow:var(--shadow-2);animation:toastin .3s var(--ease)}
+@keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%)}}
+
 table.rec{width:100%;border-collapse:collapse;font-size:14px}
 table.rec th,table.rec td{border:1px solid var(--line);padding:6px 8px;text-align:center}
-table.rec th{background:#f0f4fa}
+table.rec th{background:#f0ece0;font-family:var(--serif)}
+
 @media print{
-  .topbar,.btn,.filterbar,.noprint{display:none!important}
   body{background:#fff}
-  .qcard,.card{break-inside:avoid;border:1px solid #999}
+  body::before{display:none}
+  .topbar,.btn,.filterbar,.noprint{display:none!important}
+  .qcard,.card{break-inside:avoid;border:1px solid #999;box-shadow:none;animation:none}
 }
-.gate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}
-.gatebox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:32px;width:320px;text-align:center}
-.gatebox h2{margin-bottom:16px;font-size:18px}
-.gatebox input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;margin-bottom:12px;text-align:center}
-.gatebox .err{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
-@media(max-width:600px){.wrap{padding:10px}.qcard{padding:12px}}
+
+/* ---------- 门禁：朱红印章 ---------- */
+.gate{position:fixed;inset:0;background:var(--paper);z-index:999;display:flex;align-items:center;justify-content:center}
+.gatebox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:40px 36px 32px;width:340px;text-align:center;box-shadow:var(--shadow-2);position:relative;animation:rise .6s var(--ease)}
+.gatebox .stamp{width:76px;height:76px;margin:0 auto 18px;border:3px solid var(--seal);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--seal);font-family:var(--serif);font-size:26px;font-weight:900;letter-spacing:2px;transform:rotate(-6deg);opacity:.9;line-height:1.15;padding:4px}
+.gatebox h2{margin-bottom:6px;font-family:var(--serif);font-size:19px;color:var(--ink);letter-spacing:.05em}
+.gatebox .sub{font-size:12.5px;color:var(--muted);margin-bottom:22px;letter-spacing:.1em}
+.gatebox input{width:100%;padding:11px;border:1px solid var(--line-deep);border-radius:9px;font-size:15px;margin-bottom:14px;text-align:center;background:#fffdf7;letter-spacing:.15em;transition:border-color 200ms}
+.gatebox input:focus{outline:none;border-color:var(--navy)}
+.gatebox .err{color:var(--seal);font-size:13px;min-height:18px;margin-top:8px}
+@media(max-width:600px){.wrap{padding:14px 10px 40px}.qcard{padding:14px}.setgrid{grid-template-columns:1fr}.topbar h1 .seal{display:none}}
 </style>
 </head>
 <body>
 <div class="gate" id="gate" style="display:none">
   <div class="gatebox">
-    <h2>🔒 民呼我为·机考系统</h2>
-    <input type="password" id="gateInput" placeholder="请输入访问口令" autocomplete="off">
-    <button class="btn" style="width:100%;margin:0" onclick="tryGate()">进入</button>
+    <div class="stamp">民呼<br>我为</div>
+    <h2>机考刷题系统</h2>
+    <div class="sub">党建统领“民呼我为”工作接诉专项个人赛</div>
+    <input type="password" id="gateInput" placeholder="访问口令" autocomplete="off" aria-label="访问口令">
+    <button class="btn" style="width:100%;margin:0" onclick="tryGate()">进 入</button>
     <div class="err" id="gateErr"></div>
   </div>
 </div>
 <div class="topbar">
-  <h1 onclick="go('home')">📋 民呼我为·机考系统</h1>
+  <h1 onclick="go('home')">民呼我为·机考<span class="seal">刷题系统</span></h1>
   <button class="navbtn" onclick="go('home')">首页</button>
   <button class="navbtn" onclick="go('review')">背题</button>
   <button class="navbtn" onclick="go('wrong')">错题本 <span id="wrongCnt"></span></button>
@@ -174,19 +277,19 @@ function renderHome(){
     if(!best[r.setId]||r.score>best[r.setId]) best[r.setId]=r.score;
     last[r.setId]=r.score; });
   const draft = LS.get('draft', null);
-  let html = '<div class="card"><b>使用说明</b>：选择一套卷开始考试（60分钟倒计时，交卷立即出分）；'
-    + '多选/填空严格判分（全对才得分）。错题自动进入错题本，可重练、可打印。数据保存在本浏览器，支持导出/导入。</div>';
+  let html = '<div class="card usage"><b>怎么用：</b>挑一套卷开考 → 60分钟倒计时 → 交卷立即出分（多选/填空严格判分，全对才得分）。'
+    + '错题自动进错题本，连续答对2次自动移出。数据存在本浏览器，换设备用下方「导出/导入」搬家。</div>';
   if(draft){
-    html += `<div class="card" style="border-color:#f9a825">⏸ 检测到未完成的考试：<b>${esc(draft.title)}</b>（已答 ${Object.keys(draft.answers).length} 题）
+    html += `<div class="card" style="border-color:var(--amber);background:var(--amber-soft)">⏸ 有一场没考完：<b>${esc(draft.title)}</b>（已答 ${Object.keys(draft.answers).length} 题）
       <button class="btn" onclick="resumeDraft()">继续考试</button>
       <button class="btn ghost" onclick="dropDraft()">放弃草稿</button></div>`;
   }
   html += '<div class="setgrid">';
   DATA.sets.forEach(s=>{
-    const b = best[s.id]!==undefined?`最高 <b>${best[s.id]}</b> 分`:'未做过';
+    const b = best[s.id]!==undefined?`最高 <span class="best">${best[s.id]}</span> 分`:'未做过';
     const l = last[s.id]!==undefined?` · 最近 ${last[s.id]} 分`:'';
-    const tag = s.kind==='formal'?'<span class="tag">正卷</span>':s.kind==='backup'?'<span class="tag">备用</span>':'<span class="tag">模拟</span>';
-    html += `<div class="setcard"><h3>${esc(s.name)}${tag}</h3>
+    const tagTxt = s.kind==='formal'?'正卷':s.kind==='backup'?'备用':'模拟';
+    html += `<div class="setcard"><h3>${esc(s.name)}<span class="tag ${s.kind}">${tagTxt}</span></h3>
       <div class="meta">75题 · 100分 · 60分钟<br>${b}${l}</div>
       <button class="btn small" onclick="startExam(${s.id})">开始考试</button>
       <button class="btn small ghost" onclick="go('review',${s.id})">背题</button></div>`;
@@ -251,10 +354,10 @@ function renderExam(){
   const qs = exam.qids.map((id,i)=>Object.assign({}, QMAP[id], {no:i+1}));
   const secs = examSections(qs);
   let html = '<div class="examwrap"><div class="maincol">';
-  html += `<div class="card"><b>${esc(exam.title)}</b>
-    <span class="muted">　共 ${qs.length} 题，答题进度见右侧导航栏</span></div>`;
+  html += `<div class="card"><b style="font-family:var(--serif);font-size:17px">${esc(exam.title)}</b>
+    <span class="muted">　共 ${qs.length} 题 · 进度见右侧答题卡</span></div>`;
   secs.forEach(sec=>{
-    html += `<div class="card"><b>${sec.label}</b></div>`;
+    html += `<div class="sechead">${sec.label}</div>`;
     sec.g.forEach(q=>{
       html += `<div class="qcard" id="q${q.no}"><div class="qhead">第${q.no}题 · ${q.typeLabel}</div>`;
       if(q.t==='tian'){
@@ -275,11 +378,12 @@ function renderExam(){
   });
   html += '<div class="card" style="text-align:center"><button class="btn danger" onclick="tryFinish()">交卷</button></div>';
   html += '</div>'; // maincol
-  // 右侧固定导航栏（窄屏时自动置顶）
-  html += '<div class="sidenav"><div class="prog">已答 <b id="doneCnt">0</b>/' + qs.length + ' 题</div>'
+  // 右侧固定答题卡（窄屏时自动置顶）
+  html += '<div class="sidenav"><div class="prog">已答 <b id="doneCnt">0</b> / ' + qs.length + '</div>'
+    + '<div class="progress"><i id="progBar" style="width:0%"></i></div>'
     + '<div class="navgrid" id="navgrid">'
     + qs.map(q=>`<button id="nav${q.no}" onclick="document.getElementById('q${q.no}').scrollIntoView({block:'center'})">${q.no}</button>`).join('')
-    + '</div><button class="btn danger" style="width:100%;margin-top:10px" onclick="tryFinish()">交卷</button></div>';
+    + '</div><button class="btn danger" style="width:100%;margin-top:12px" onclick="tryFinish()">交卷</button></div>';
   html += '</div>'; // examwrap
   document.getElementById('app').innerHTML = html;
   // 恢复答案
@@ -332,6 +436,8 @@ function fillBlank(qid){
 function updateDone(){
   const n = Object.keys(exam.answers).length;
   const dc = document.getElementById('doneCnt'); if(dc) dc.textContent=n;
+  const bar = document.getElementById('progBar');
+  if(bar) bar.style.width = (n/exam.qids.length*100).toFixed(1)+'%';
   exam.qids.forEach((id,idx)=>{
     const nb = document.getElementById('nav'+(idx+1));
     if(nb) nb.classList.toggle('done', exam.answers[id]!==undefined);
@@ -401,16 +507,22 @@ function renderResult(wasExam){
   const r = result;
   const wrong = r.per.filter(p=>p.got<p.max);
   const head = wasExam
-    ? `<div class="scorebig">${r.score}<span style="font-size:18px;color:#888"> / 100</span></div>
-       <div class="subscore"><span>单选 ${r.secScore.dan}/30</span><span>多选 ${r.secScore.duo}/20</span>
-       <span>判断 ${r.secScore.pan}/20</span><span>填空 ${r.secScore.tian}/30</span></div>`
-    : `<div class="scorebig">${r.per.filter(p=>p.got===p.max).length}<span style="font-size:18px;color:#888"> / ${r.total} 题</span></div>`;
+    ? `<div class="scorewrap"><div class="scorebig">${r.score}<span> / 100</span></div>
+       <div class="scoreline">本次得分</div></div>
+       <div class="subscore">
+         <div class="sub${r.secScore.dan?'':' zero'}"><div class="lab">单选</div><div class="val">${r.secScore.dan}<span style="font-size:12px;color:var(--muted)">/30</span></div></div>
+         <div class="sub${r.secScore.duo?'':' zero'}"><div class="lab">多选</div><div class="val">${r.secScore.duo}<span style="font-size:12px;color:var(--muted)">/20</span></div></div>
+         <div class="sub${r.secScore.pan?'':' zero'}"><div class="lab">判断</div><div class="val">${r.secScore.pan}<span style="font-size:12px;color:var(--muted)">/20</span></div></div>
+         <div class="sub${r.secScore.tian?'':' zero'}"><div class="lab">填空</div><div class="val">${r.secScore.tian}<span style="font-size:12px;color:var(--muted)">/30</span></div></div>
+       </div>`
+    : `<div class="scorewrap"><div class="scorebig">${r.per.filter(p=>p.got===p.max).length}<span> / ${r.total} 题</span></div>
+       <div class="scoreline">重练完成</div></div>`;
   let html = `<div class="card">${head}
-    <div style="text-align:center;margin-top:8px">
+    <div style="text-align:center;margin-top:12px">
       <button class="btn" onclick="go('home')">回首页</button>
       <button class="btn ghost" onclick="go('wrong')">看错题本</button>
     </div></div>`;
-  html += `<div class="card"><b>${esc(r.title)}</b>　错 <b style="color:var(--red)">${wrong.length}</b> 题（已自动收入错题本）</div>`;
+  html += `<div class="card"><b style="font-family:var(--serif)">${esc(r.title)}</b>　错题 <b style="color:var(--seal);font-size:17px">${wrong.length}</b> 题 <span class="muted">（已自动收入错题本）</span></div>`;
   wrong.forEach(p=>{
     const q = p.q;
     let body = `<div class="qhead">第${q.no}题 · ${q.typeLabel} · ${q.cat}</div><div class="stem">${esc(q.stem)}</div>`;
@@ -433,7 +545,7 @@ function renderResult(wasExam){
     }
     html += `<div class="qcard">${body}</div>`;
   });
-  if(!wrong.length) html += '<div class="card" style="text-align:center;font-size:20px">🎉 全对！</div>';
+  if(!wrong.length) html += '<div class="card" style="text-align:center;font-family:var(--serif);font-size:22px;color:var(--green)">全对，漂亮！</div>';
   document.getElementById('app').innerHTML = html;
   window.scrollTo(0,0);
 }
@@ -513,7 +625,7 @@ function renderReview(setId){
     DATA.sets.map(x=>`<option value="${x.id}" ${x.id==setId?'selected':''}>${esc(x.name)}</option>`).join('') +
     `</select> <button class="btn ghost small" onclick="window.print()">打印本套</button></div>`;
   examSections(s.questions).forEach(sec=>{
-    html += `<div class="card"><b>${sec.label}</b></div>`;
+    html += `<div class="sechead">${sec.label}</div>`;
     sec.g.forEach(q=>{
       let body = `<div class="qhead">第${q.no}题 · ${q.cat}</div><div class="stem">${esc(q.stem)}</div>`;
       if(q.t==='dan'||q.t==='duo'){
