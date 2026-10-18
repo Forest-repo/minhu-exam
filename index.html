@@ -455,13 +455,18 @@ function renderWrong(){
     types.map(t=>{
       const n = t==='all'?ids.length:ids.filter(id=>QMAP[id].t===t).length;
       return `<button class="${wrongFilter===t?'on':''}" onclick="wrongFilter='${t}';renderWrong()">${tLabel[t]} ${n}</button>`;
-    }).join('') + '</div></div>';
+    }).join('') + `</div>
+    <div class="noprint" style="margin-top:10px;font-size:13px">
+      <label style="cursor:pointer"><input type="checkbox" onchange="toggleSelAll(this)"> 全选（当前筛选）</label>
+      <button class="btn small ghost" onclick="removeSelected()">删除选中</button>
+      <button class="btn small ghost" style="color:var(--red);border-color:var(--red)" onclick="clearWrong()">清空错题本</button>
+    </div></div>`;
   const show = ids.filter(id=>wrongFilter==='all'||QMAP[id].t===wrongFilter)
                   .sort((a,b)=>book[b].lastWrong-book[a].lastWrong);
   if(!show.length){ html += '<div class="card" style="text-align:center">🎉 没有错题，继续保持！</div>'; }
   show.forEach(id=>{
     const q = QMAP[id], e = book[id];
-    let body = `<div class="qhead">${q.typeLabel} · ${q.cat} · 错 ${e.count} 次 · 最近 ${fmtDate(e.lastWrong)}</div>
+    let body = `<div class="qhead"><input type="checkbox" class="wck noprint" value="${id}"> ${q.typeLabel} · ${q.cat} · 错 ${e.count} 次 · 最近 ${fmtDate(e.lastWrong)}</div>
       <div class="stem">${esc(q.stem)}</div>`;
     if(q.t==='dan'||q.t==='duo'){
       ['A','B','C','D'].forEach(L=>{
@@ -478,6 +483,25 @@ function renderWrong(){
 function removeWrong(id){
   const b = getBook(); delete b[id]; saveBook(b);
   renderWrong(); refreshWrongCnt(); toast('已移出错题本');
+}
+function toggleSelAll(ck){
+  document.querySelectorAll('.wck').forEach(c=>c.checked=ck.checked);
+}
+function removeSelected(){
+  const ids = [...document.querySelectorAll('.wck:checked')].map(c=>c.value);
+  if(!ids.length){ toast('先勾选要删除的题'); return; }
+  if(!confirm('确定把选中的 '+ids.length+' 题移出错题本？')) return;
+  const b = getBook();
+  ids.forEach(id=>delete b[id]);
+  saveBook(b); renderWrong(); refreshWrongCnt();
+  toast('已删除 '+ids.length+' 题');
+}
+function clearWrong(){
+  const n = Object.keys(getBook()).length;
+  if(!n){ toast('错题本已经是空的'); return; }
+  if(!confirm('确定清空全部 '+n+' 道错题？此操作不可恢复！')) return;
+  saveBook({}); renderWrong(); refreshWrongCnt();
+  toast('错题本已清空');
 }
 
 /* ================= 背题 ================= */
