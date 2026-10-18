@@ -45,6 +45,16 @@ body{font-family:"Microsoft YaHei","PingFang SC","Source Han Sans SC",sans-serif
 .navgrid button{padding:6px 0;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-size:13px}
 .navgrid button.done{background:var(--blue);color:#fff;border-color:var(--blue)}
 .navgrid button.cur{outline:2px solid var(--red)}
+.sidenav{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+.sidenav .prog{text-align:center;margin-bottom:8px;font-size:14px}
+@media(min-width:1024px){
+  .examwrap .maincol{margin-right:215px}
+  .sidenav{position:fixed;right:16px;top:64px;width:195px;max-height:calc(100vh - 84px);overflow-y:auto;z-index:5}
+}
+@media(max-width:1023px){
+  .examwrap{display:flex;flex-direction:column}
+  .sidenav{order:-1;margin-bottom:12px}
+}
 .scorebig{font-size:44px;font-weight:800;color:var(--blue);text-align:center}
 .subscore{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:10px 0;color:#444;font-size:14px}
 .diff{font-size:13.5px;background:#fafafa;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.7}
@@ -240,13 +250,9 @@ function renderExam(){
   // 题号按本套位置重新编号（QMAP中的no会被其他套覆盖，不可用）
   const qs = exam.qids.map((id,i)=>Object.assign({}, QMAP[id], {no:i+1}));
   const secs = examSections(qs);
-  let html = `<div class="card"><b>${esc(exam.title)}</b>
-    <span class="muted">　已答 <b id="doneCnt">0</b>/${qs.length} 题</span>
-    <div style="float:right"><button class="btn danger" onclick="tryFinish()">交卷</button></div>
-    <div style="clear:both"></div></div>`;
-  html += '<div class="card"><div class="navgrid" id="navgrid">' +
-    qs.map((q,i)=>`<button id="nav${q.no}" onclick="document.getElementById('q${q.no}').scrollIntoView({block:'center'})">${q.no}</button>`).join('') +
-    '</div></div>';
+  let html = '<div class="examwrap"><div class="maincol">';
+  html += `<div class="card"><b>${esc(exam.title)}</b>
+    <span class="muted">　共 ${qs.length} 题，答题进度见右侧导航栏</span></div>`;
   secs.forEach(sec=>{
     html += `<div class="card"><b>${sec.label}</b></div>`;
     sec.g.forEach(q=>{
@@ -268,6 +274,13 @@ function renderExam(){
     });
   });
   html += '<div class="card" style="text-align:center"><button class="btn danger" onclick="tryFinish()">交卷</button></div>';
+  html += '</div>'; // maincol
+  // 右侧固定导航栏（窄屏时自动置顶）
+  html += '<div class="sidenav"><div class="prog">已答 <b id="doneCnt">0</b>/' + qs.length + ' 题</div>'
+    + '<div class="navgrid" id="navgrid">'
+    + qs.map(q=>`<button id="nav${q.no}" onclick="document.getElementById('q${q.no}').scrollIntoView({block:'center'})">${q.no}</button>`).join('')
+    + '</div><button class="btn danger" style="width:100%;margin-top:10px" onclick="tryFinish()">交卷</button></div>';
+  html += '</div>'; // examwrap
   document.getElementById('app').innerHTML = html;
   // 恢复答案
   Object.entries(exam.answers).forEach(([qid,a])=>{
