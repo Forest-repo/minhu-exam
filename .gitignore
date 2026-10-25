@@ -1,0 +1,12 @@
+# 系统与编辑器
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# 临时文件与缓存
+*.tmp
+*.log
+__pycache__/
+*.pyc
